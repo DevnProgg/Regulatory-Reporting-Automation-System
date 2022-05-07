@@ -1,9 +1,7 @@
 package com.wisetech.rras.model.snapshot;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.wisetech.rras.model.auditing.AuditableEntity;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -16,17 +14,20 @@ import java.util.Date;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Snapshot {
+@Table(name = "snapshot", schema = "snapshot", catalog = "RegulatoryReportingSystem")
+public class Snapshot extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long snapshot_id;
+    @Column(name = "snapshot_id")
+    private long snapshotID;
 
     @NotNull(message = "Date should not be null")
+    @Column(name = "date", nullable = false)
     private Date date;
 
     @NotBlank(message = "Status should not be blank")
+    @Column(name = "status", nullable = false)
     private String status;
 
-    private Date created_at;
 }

@@ -2,7 +2,7 @@ spring:
   application:
     name: rras
   datasource:
-    url: jdbc:postgresql://localhost:5432/centralbank
+    url: jdbc:postgresql://localhost:5432/RegulatoryReportingSystem
     username: lauren
     password: dev
     driver-class-name: org.postgresql.Driver
