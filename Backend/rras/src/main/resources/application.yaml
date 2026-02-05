@@ -1,3 +1,16 @@
 spring:
   application:
     name: rras
+  datasource:
+    url: jdbc:postgresql://localhost:5432/centralbank
+    username: lauren
+    password: dev
+    driver-class-name: org.postgresql.Driver
+
+    jpa:
+      hibernate:
+        ddl-auto: validate      # auto-creates/updates tables. Use 'validate' in production.
+      show-sql: true            # prints SQL to console (useful for debugging)
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
