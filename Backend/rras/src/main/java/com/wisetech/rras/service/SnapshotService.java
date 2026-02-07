@@ -1,4 +1,4 @@
-package com.wisetech.rras.service.implementations;
+package com.wisetech.rras.service;
 
 import org.springframework.stereotype.Service;
 
