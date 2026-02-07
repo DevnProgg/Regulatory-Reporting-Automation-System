@@ -1,9 +1,6 @@
 package com.wisetech.rras.model.cbs;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -32,6 +29,7 @@ public class Transactions {
     private double amount;
 
     @NotNull(message = "Direction is required")
+    @Enumerated(EnumType.STRING)
     private Txn_Direction direction;
 
     @NotNull(message = "Balance should not be null")

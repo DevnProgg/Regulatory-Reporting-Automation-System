@@ -1,6 +1,8 @@
 package com.wisetech.rras.model.source_read;
 
 import com.wisetech.rras.model.cbs.Customer_Category;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +26,7 @@ public class Loan_Exposures {
     private long customer_id;
 
     @NotNull(message = "Customer type should not be null")
+    @Enumerated(EnumType.STRING)
     private Customer_Category customer_type;
 
     @DecimalMin(value = "0.01", message = "Principal Amount should be greater than 0")

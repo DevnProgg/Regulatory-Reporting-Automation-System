@@ -1,10 +1,7 @@
 package com.wisetech.rras.model.snapshot;
 
 import com.wisetech.rras.model.cbs.Customer_Category;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,6 +23,7 @@ public class Loan_Exposures_Snapshot {
     private long loan_id;
 
     @NotNull(message="Customer Category should not be null")
+    @Enumerated(EnumType.STRING)
     private Customer_Category customer_category;
 
     @DecimalMin(value = "0.01", message = "Principal Amount should be greater than 0")

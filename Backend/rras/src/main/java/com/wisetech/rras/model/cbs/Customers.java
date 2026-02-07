@@ -1,9 +1,6 @@
 package com.wisetech.rras.model.cbs;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -23,6 +20,7 @@ public class Customers {
     private long customer_id;
 
     @NotNull(message="Customer Category should not be null")
+    @Enumerated(EnumType.STRING)
     private Customer_Category customer_category;
 
     @NotBlank(message = "Country should not be blank")
