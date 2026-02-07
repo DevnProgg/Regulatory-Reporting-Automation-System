@@ -13,14 +13,16 @@ import java.util.Date;
 
 @Entity
 @AllArgsConstructor
+@Setter
+@Getter
 public class Loan_Performance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter @Getter long loan_id;
+    private long loan_id;
 
-    private @Setter @Getter int days_past_due;
+    private int days_past_due;
 
     @NotNull(message = "Date should not be null")
-    private @Setter @Getter Date last_payment_date;
+    private Date last_payment_date;
 }

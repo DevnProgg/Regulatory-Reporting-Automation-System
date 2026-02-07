@@ -14,26 +14,28 @@ import lombok.Setter;
 
 @Entity
 @AllArgsConstructor
+@Getter
+@Setter
 public class Loan_Exposures_Snapshot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter @Getter long snapshot_id;
+    private long snapshot_id;
 
     @NotNull(message = "Loan id cannot be null")
-    private @Setter @Getter long loan_id;
+    private long loan_id;
 
     @NotNull(message="Customer Category should not be null")
-    private @Getter @Setter Customer_Category customer_category;
+    private Customer_Category customer_category;
 
     @DecimalMin(value = "0.01", message = "Principal Amount should be greater than 0")
-    private @Setter @Getter double principal_amount;
+    private double principal_amount;
 
     @DecimalMin(value = "0.01", message = "Collateral value should be greater than 0")
-    private @Setter @Getter double collateral_value;
+    private double collateral_value;
 
-    private @Setter @Getter int days_past_due;
+    private int days_past_due;
 
     @NotBlank(message = "Country should not be blank")
-    private @Getter @Setter String country;
+    private String country;
 }

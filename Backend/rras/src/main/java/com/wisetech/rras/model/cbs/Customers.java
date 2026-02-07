@@ -14,20 +14,22 @@ import java.util.Date;
 
 @Entity
 @AllArgsConstructor
+@Setter
+@Getter
 public class Customers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter @Getter long customer_id;
+    private long customer_id;
 
     @NotNull(message="Customer Category should not be null")
-    private @Getter @Setter Customer_Category customer_category;
+    private Customer_Category customer_category;
 
     @NotBlank(message = "Country should not be blank")
-    private @Getter @Setter String country;
+    private String country;
 
     @NotNull(message = "Risk Rating should not be null")
-    private @Setter @Getter int risk_rating;
+    private int risk_rating;
 
-    private @Getter @Setter Date created_at;
+    private Date created_at;
 }

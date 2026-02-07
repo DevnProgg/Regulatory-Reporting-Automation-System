@@ -15,27 +15,29 @@ import java.util.Date;
 
 @Entity
 @AllArgsConstructor
+@Setter
+@Getter
 public class Loans {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter @Getter long loan_id;
+    private long loan_id;
 
     @NotNull(message = "Account id cannot be null")
-    private @Setter @Getter long account_id;
+    private long account_id;
 
     @DecimalMin(value = "0.01", message = "Principal Amount should be greater than 0")
-    private @Setter @Getter double principal_amount;
+    private double principal_amount;
 
     @DecimalMin(value = "0.01", message = "Interest rate should be greater than 0")
-    private @Setter @Getter double interest_rate;
+    private double interest_rate;
 
     @NotNull(message = "Date should not be null")
-    private @Setter @Getter Date maturity_date;
+    private Date maturity_date;
 
     @DecimalMin(value = "0.01", message = "Collateral value should be greater than 0")
-    private @Setter @Getter double collateral_value;
+    private double collateral_value;
 
     @NotBlank(message = "Product Type should not be blank")
-    private @Setter @Getter String product_type;
+    private String product_type;
 }

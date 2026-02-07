@@ -15,24 +15,26 @@ import java.util.Date;
 
 @Entity
 @AllArgsConstructor
+@Getter
+@Setter
 public class Regulatory_Metrics {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Getter @Setter long metric_id;
+    private long metric_id;
 
     @NotNull(message = "Snapshot id cannot be null")
-    private @Getter @Setter long snapshot_id;
+    private long snapshot_id;
 
     @NotBlank(message = "Code should not be blank")
-    private @Getter @Setter String metric_code;
+    private String metric_code;
 
     @DecimalMin(value = "0.01", message = "Value should be greater than 0")
-    private @Getter @Setter double value;
+    private double value;
 
     @NotBlank(message = "Unit should not be blank")
-    private @Getter @Setter String unit;
+    private String unit;
 
     @NotNull(message = "Date should not be null")
-    private @Getter @Setter Date calculated_at;
+    private Date calculated_at;
 }

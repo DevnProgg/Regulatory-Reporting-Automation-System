@@ -14,24 +14,26 @@ import java.util.Date;
 
 @Entity
 @AllArgsConstructor
+@Setter
+@Getter
 public class Transactions {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter @Getter long txn_id;
+    private long txn_id;
 
     @NotNull(message = "Account id cannot be null")
-    private @Setter @Getter  long account_id;
+    private long account_id;
 
     @NotNull(message = "Transaction Date cannot be null")
-    private @Setter @Getter Date txn_date;
+    private Date txn_date;
 
     @DecimalMin(value = "0.01", message = "Amount has to be greater than 0")
-    private @Setter @Getter double amount;
+    private double amount;
 
     @NotNull(message = "Direction is required")
-    private @Setter @Getter Txn_Direction direction;
+    private Txn_Direction direction;
 
     @NotNull(message = "Balance should not be null")
-    private @Setter @Getter double balance_after;
+    private double balance_after;
 }

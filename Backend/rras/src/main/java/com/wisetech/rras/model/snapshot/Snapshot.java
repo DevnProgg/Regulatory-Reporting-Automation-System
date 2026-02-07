@@ -14,17 +14,19 @@ import java.util.Date;
 
 @Entity
 @AllArgsConstructor
+@Getter
+@Setter
 public class Snapshot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter @Getter long snapshot_id;
+    private long snapshot_id;
 
     @NotNull(message = "Date should not be null")
-    private @Setter @Getter Date date;
+    private Date date;
 
     @NotBlank(message = "Status should not be blank")
-    private @Setter @Getter String status;
+    private String status;
 
-    private @Setter @Getter Date created_at;
+    private Date created_at;
 }
