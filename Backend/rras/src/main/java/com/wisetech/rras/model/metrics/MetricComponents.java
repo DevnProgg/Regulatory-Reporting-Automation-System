@@ -21,19 +21,19 @@ import java.io.Serializable;
 public class MetricComponents extends AuditableEntity {
 
     @Id
-    @Column(name = "snapshot_id")
+    @Column(name = "snapshot_id", updatable = false)
     private long snapshotID;
 
     @Id
-    @Column(name = "loan_id")
+    @Column(name = "loan_id", updatable = false)
     private long loanID;
 
     @DecimalMin(value = "0.01", message = "RWA Should not be less then 0")
-    @Column(name = "rwa_value", nullable = false)
+    @Column(name = "rwa_value", nullable = false, updatable = false)
     private double rwaValue;
 
     @DecimalMin(value = "0.01", message = "Risk Weight should not be less than 0")
-    @Column(name = "risk_weight", nullable = false)
+    @Column(name = "risk_weight", nullable = false, updatable = false)
     private double riskWeight;
 }
 

@@ -26,22 +26,22 @@ public class RegulatoryMetrics extends AuditableEntity {
     private long metricID;
 
     @NotNull(message = "Snapshot id cannot be null")
-    @Column(name = "snapshot_id")
+    @Column(name = "snapshot_id", updatable = false)
     private long snapshotID;
 
     @NotBlank(message = "Code should not be blank")
-    @Column(name = "metric_code", nullable = false)
+    @Column(name = "metric_code", nullable = false, updatable = false)
     private String metricCode;
 
     @DecimalMin(value = "0.01", message = "Value should be greater than 0")
-    @Column(name = "value")
+    @Column(name = "value", updatable = false)
     private double value;
 
     @NotBlank(message = "Unit should not be blank")
-    @Column(name = "unit", nullable = false)
+    @Column(name = "unit", nullable = false, updatable = false)
     private String unit;
 
     @NotNull(message = "Date should not be null")
-    @Column(name = "calculated_at")
+    @Column(name = "calculated_at", updatable = false)
     private Date calculatedAt;
 }

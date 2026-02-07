@@ -19,12 +19,8 @@ public class Snapshot extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "snapshot_id")
+    @Column(name = "snapshot_id", updatable = false)
     private long snapshotID;
-
-    @NotNull(message = "Date should not be null")
-    @Column(name = "date", nullable = false)
-    private Date date;
 
     @NotBlank(message = "Status should not be blank")
     @Column(name = "status", nullable = false)
