@@ -29,7 +29,6 @@ import java.util.Map;
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
-// NOTE: @EnableBatchProcessing is removed to allow Spring Boot 3 auto-configuration
 public class RegulatoryCalculationJobConfig {
 
     private final JobRepository jobRepository;
@@ -72,9 +71,7 @@ public class RegulatoryCalculationJobConfig {
                 .build();
     }
 
-    // -------------------------------------------------------------------------
-    // 1. Create Snapshot
-    // -------------------------------------------------------------------------
+    // Create Snapshot
     @Bean
     public Step createSnapshotStep() {
         return new StepBuilder("createSnapshot", jobRepository)
@@ -112,9 +109,7 @@ public class RegulatoryCalculationJobConfig {
         };
     }
 
-    // -------------------------------------------------------------------------
-    // 2. Copy Loan Data (ELT)
-    // -------------------------------------------------------------------------
+    //  Copy Loan Data (ELT)
     @Bean
     public Step copyLoanDataStep() {
         return new StepBuilder("copyLoanData", jobRepository)
@@ -156,9 +151,7 @@ public class RegulatoryCalculationJobConfig {
         };
     }
 
-    // -------------------------------------------------------------------------
-    // 3. Copy Capital Data
-    // -------------------------------------------------------------------------
+    //  Copy Capital Data
     @Bean
     public Step copyCapitalDataStep() {
         return new StepBuilder("copyCapitalData", jobRepository)
@@ -194,9 +187,7 @@ public class RegulatoryCalculationJobConfig {
         };
     }
 
-    // -------------------------------------------------------------------------
-    // 4. Copy Liquidity Data
-    // -------------------------------------------------------------------------
+    // Copy Liquidity Data
     @Bean
     public Step copyLiquidityDataStep() {
         return new StepBuilder("copyLiquidityData", jobRepository)
@@ -227,9 +218,7 @@ public class RegulatoryCalculationJobConfig {
         };
     }
 
-    // -------------------------------------------------------------------------
-    // 5. Validate Snapshot
-    // -------------------------------------------------------------------------
+    // Validate Snapshot
     @Bean
     public Step validateSnapshotStep() {
         return new StepBuilder("validateSnapshot", jobRepository)
@@ -261,11 +250,8 @@ public class RegulatoryCalculationJobConfig {
         };
     }
 
-    // -------------------------------------------------------------------------
-    // 6 - 10. Calculation Steps (Wrapper Pattern)
-    // -------------------------------------------------------------------------
+    // Calculation Steps (Wrapper Pattern)
 
-    // Helper to create simple calculation steps to reduce boilerplate
     private Step createCalculationStep(String stepName, String calcType, Runnable calcAction) {
         return new StepBuilder(stepName, jobRepository)
                 .tasklet((contribution, chunkContext) -> {
@@ -280,18 +266,6 @@ public class RegulatoryCalculationJobConfig {
                 }, transactionManager)
                 .build();
     }
-
-    @Bean
-    public Step calculateRWAStep() {
-        return createCalculationStep("calculateRWA", "RWA", () -> {
-            // We need to fetch ID inside the lambda or pass it.
-            // Using a slightly different pattern for the helper to access snapshotId dynamically:
-            throw new UnsupportedOperationException("Use the direct implementation below instead of this helper for clarity if needed");
-        });
-        // REPLACING WITH DIRECT IMPL TO AVOID CLOSURE COMPLEXITY
-    }
-
-    // --- Direct Step Implementations for Clarity ---
 
     @Bean(name = "calculateRWAStep")
     public Step calculateRWAStepImpl() {
@@ -350,9 +324,8 @@ public class RegulatoryCalculationJobConfig {
                 }, transactionManager).build();
     }
 
-    // -------------------------------------------------------------------------
-    // 11. Finalize
-    // -------------------------------------------------------------------------
+    // Finalize
+
     @Bean
     public Step finalizeSnapshotStep() {
         return new StepBuilder("finalizeSnapshot", jobRepository)
