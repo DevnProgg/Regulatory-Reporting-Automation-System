@@ -1,351 +1,336 @@
-import uuid
+import psycopg2
 import random
-import requests
-import time
+from faker import Faker
 from datetime import datetime, timedelta
-from decimal import Decimal
-import json
-from typing import Dict, List, Set
-import logging
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+import os
+# CONFIGURATION
+DB_CONFIG = {
+    "dbname": os.getenv("DBNAME"),
+    "user": os.getenv("USERNAME"),
+    "password": os.getenv("PASSWORD"),
+    "host": "localhost",
+    "port": os.getenv("PORT"),
+}
 
 
-class LesothoBankSimulator:
-    """Simulates real-time banking transactions for Lesotho financial institutions"""
+print(DB_CONFIG)
 
-    def __init__(self, api_endpoint: str, api_key: str = None):
-        self.api_endpoint = api_endpoint
-        self.api_key = api_key
-        self.session = requests.Session()
-        if api_key:
-            self.session.headers.update({'Authorization': f'Bearer {api_key}'})
+# Initialize Faker
+fake = Faker()
 
-        # Track unique identifiers to prevent duplication
-        self.used_transaction_ids: Set[str] = set()
-        self.used_loan_ids: Set[str] = set()
-        self.used_account_ids: Set[str] = set()
+# LESOTHO SPECIFIC DATA SETS
+# Custom lists to ensure data looks authentic for Lesotho
+TOWNS = [
+    "Maseru", "Teyateyaneng", "Mafeteng", "Hlotse", "Mohale's Hoek",
+    "Maputsoe", "Qacha's Nek", "Quthing", "Butha-Buthe", "Mokhotlong", "Thaba-Tseka"
+]
 
-        # Lesotho-specific data
-        self.currency = 'LSL'  # Lesotho Loti
-        self.country_code = 'LS'
+FIRST_NAMES = [
+    "Thabo", "Mpho", "Lerato", "Tsepo", "Moshoeshoe", "Nthabiseng",
+    "Refiloe", "Khotso", "Palesa", "Rethabile", "Bokang", "Neo",
+    "Limpho", "Teboho", "Karabo", "Maseeiso", "Lineo"
+]
 
-        self.lesotho_names = {
-            'male_first': ['Thabo', 'Tshepo', 'Lehlohonolo', 'Mohlomi', 'Retšelisitsoe',
-                           'Tšepo', 'Kabelo', 'Molefe', 'Tumelo', 'Lebohang'],
-            'female_first': ['Palesa', 'Mamello', 'Lineo', 'Rethabile', 'Mpho',
-                             'Keitumetse', 'Mathabo', 'Refiloe', 'Tšepiso', 'Naledi'],
-            'surnames': ['Molapo', 'Moshoeshoe', 'Ramosoeu', 'Letsie', 'Mohale',
-                         'Mofolo', 'Ntšo', 'Khethisa', 'Moloi', 'Sekhonyana',
-                         'Tau', 'Mokone', 'Tlali', 'Mphoso', 'Ntsane']
-        }
+SURNAMES = [
+    "Mokoena", "Dlamini", "Molapo", "Ramabanta", "Phiri", "Radebe",
+    "Mosoeu", "Maqelepo", "Letsie", "Chabeli", "Nhlapo", "Sehloho",
+    "Tau", "Moloi", "Tlali", "Majara"
+]
 
-        self.business_names = [
-            'Maseru Wholesalers', 'Leribe Trading Co', 'Mafeteng Textiles',
-            'Roma Valley Farms', 'Teyateyaneng Crafts', 'Mokhotlong Mining',
-            'Butha-Buthe Transport', 'Quthing Stores', "Mohale's Hoek Traders",
-            'Thaba-Tseka Enterprises', 'Basotho Hat Manufacturing',
-            'Lesotho Wool Exporters', 'Maluti Mountain Lodge', 'Katse Dam Services'
-        ]
+CORPORATES = [
+    "Maluti Mountain Brewery", "Letseng Diamonds", "Lesotho Flour Mills",
+    "Matekane Group", "Lesotho Electricity Company", "Water and Sewerage Company",
+    "Econet Telecom Lesotho", "Vodacom Lesotho", "Alliance Insurance",
+    "Lesotho Post Bank", "Loti Brick", "Basotho Canners"
+]
 
-        self.sectors = [
-            'AGRICULTURE', 'MINING', 'MANUFACTURING', 'RETAIL', 'WHOLESALE',
-            'TRANSPORT', 'HOSPITALITY', 'CONSTRUCTION', 'TEXTILE', 'FINANCIAL'
-        ]
 
-        self.collateral_types = [
-            'REAL_ESTATE', 'VEHICLE', 'LIVESTOCK', 'EQUIPMENT',
-            'INVENTORY', 'LAND', 'WOOL_STOCK', 'MOHAIR_STOCK'
-        ]
+# HELPER FUNCTIONS
 
-        # Initialize bank
-        self.bank_id = str(uuid.uuid4())
-        self.initialize_bank()
+def get_db_connection():
+    return psycopg2.connect(**DB_CONFIG)
 
-    def initialize_bank(self):
-        """Initialize a sample bank"""
-        self.bank_data = {
-            'bank_id': self.bank_id,
-            'bank_code': 'LSBL001',
-            'bank_name': 'Lesotho Standard Bank',
-            'license_number': 'CBL/2024/001',
-            'reporting_currency': self.currency,
-            'created_at': datetime.now().isoformat()
-        }
-        logger.info(f"Initialized bank: {self.bank_data['bank_name']}")
 
-    def generate_unique_uuid(self, used_set: Set[str]) -> str:
-        """Generate a UUID that hasn't been used before"""
-        while True:
-            new_id = str(uuid.uuid4())
-            if new_id not in used_set:
-                used_set.add(new_id)
-                return new_id
+def generate_lesotho_name():
+    return f"{random.choice(FIRST_NAMES)} {random.choice(SURNAMES)}"
 
-    def generate_customer(self, customer_type: str = None) -> Dict:
-        """Generate a unique customer"""
-        if customer_type is None:
-            customer_type = random.choice(['INDIVIDUAL', 'CORPORATE'])
 
-        customer = {
-            'customer_id': str(uuid.uuid4()),
-            'customer_type': customer_type,
-            'sector_code': random.choice(self.sectors),
-            'country_code': self.country_code,
-            'created_at': datetime.now().isoformat()
-        }
+def determine_asset_class(dpd):
+    """Maps Days Past Due to Lesotho CBL Asset Classification"""
+    if dpd <= 30:
+        return 'STANDARD'
+    elif dpd <= 60:
+        return 'WATCH'
+    elif dpd <= 90:
+        return 'SUBSTANDARD'
+    elif dpd <= 180:
+        return 'DOUBTFUL'
+    else:
+        return 'LOSS'
 
-        if customer_type == 'INDIVIDUAL':
-            gender = random.choice(['male', 'female'])
-            first_name = random.choice(self.lesotho_names[f'{gender}_first'])
-            surname = random.choice(self.lesotho_names['surnames'])
-            customer['name'] = f"{first_name} {surname}"
+
+def determine_ifrs9_stage(asset_class):
+    """Maps Asset Class to IFRS 9 Stage"""
+    if asset_class == 'STANDARD':
+        return 1
+    elif asset_class == 'WATCH':
+        return 2
+    else:
+        return 3
+
+
+# DATA GENERATION FUNCTIONS
+
+def insert_customers(connection, count=50):
+    print(f"--- Generating {count} Customers ---")
+    cursor = connection.cursor()
+    customer_ids = []
+
+    for _ in range(count):
+        # 80% Retail, 20% Corporate/SME
+        is_corporate = random.random() < 0.2
+
+        if is_corporate:
+            name = random.choice(CORPORATES) + " " + random.choice(["Holdings", "Ltd", "Pty Ltd", "Trading"])
+            cust_type = random.choice(['CORP', 'SME'])
+            is_financial = random.choice([True, False]) if cust_type == 'CORP' else False
         else:
-            customer['name'] = random.choice(self.business_names)
+            name = generate_lesotho_name()  # Only used for logging/logic, schema doesn't have name col (assumed PII separation)
+            cust_type = 'RETAIL'
+            is_financial = False
 
-        return customer
+        country = "Lesotho"
+        # 10% chance of foreign entity (e.g., South Africa)
+        if random.random() < 0.1:
+            country = "South Africa"
 
-    def generate_account(self, customer_id: str, account_type: str = None) -> Dict:
-        """Generate a unique account"""
-        if account_type is None:
-            account_type = random.choice(['LOAN', 'DEPOSIT', 'NOSTRO'])
+        sql = """
+            INSERT INTO cbs.customers (
+                customer_type, country, country_risk_rating, internal_rating, 
+                external_rating, pd_value, lgd_value, is_financial_inst, is_public_sector
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING customer_id
+        """
 
-        account_id = self.generate_unique_uuid(self.used_account_ids)
-        opened_at = datetime.now() - timedelta(days=random.randint(30, 1095))
+        # Ratings logic
+        internal_rating = random.choice(['AAA', 'AA', 'A', 'BBB', 'BB', 'B', 'CCC'])
+        pd_value = random.uniform(0.001, 0.15)  # 0.1% to 15% probability of default
+        lgd_value = random.uniform(0.20, 0.60)  # 20% to 60% loss given default
 
-        account = {
-            'account_id': account_id,
-            'bank_id': self.bank_id,
-            'customer_id': customer_id,
-            'account_type': account_type,
-            'currency': self.currency,
-            'opened_at': opened_at.date().isoformat(),
-            'status': 'ACTIVE'
-        }
+        cursor.execute(sql, (
+            cust_type, country, random.randint(2, 5), internal_rating,
+            None, pd_value, lgd_value, is_financial, False
+        ))
+        customer_ids.append(cursor.fetchone()[0])
 
-        if account_type == 'LOAN':
-            account['maturity_date'] = (opened_at + timedelta(days=random.randint(365, 3650))).date().isoformat()
+    connection.commit()
+    print("Customers inserted.")
+    return customer_ids
 
-        return account
 
-    def generate_loan_exposure(self, account_id: str) -> Dict:
-        """Generate a unique loan exposure transaction"""
-        loan_id = self.generate_unique_uuid(self.used_loan_ids)
+def insert_accounts(conn, customer_ids):
+    print(f"--- Generating Accounts for {len(customer_ids)} Customers ---")
+    cursor = conn.cursor()
+    account_ids = []
 
-        # Realistic loan amounts for Lesotho (LSL)
-        outstanding_balance = round(random.uniform(10000, 5000000), 2)
-        accrued_interest = round(outstanding_balance * random.uniform(0.01, 0.15), 2)
+    for cust_id in customer_ids:
+        # Every customer gets 1-3 accounts
+        num_accounts = random.randint(1, 3)
 
-        # Calculate days past due with weighted distribution
-        dpd_weights = [0.7, 0.15, 0.08, 0.05, 0.02]  # Most loans current
-        dpd_ranges = [0, random.randint(1, 30), random.randint(31, 60),
-                      random.randint(61, 90), random.randint(91, 180)]
-        days_past_due = random.choices(dpd_ranges, weights=dpd_weights)[0]
+        for _ in range(num_accounts):
+            acc_type = random.choice(['SAVINGS', 'CURRENT', 'LOAN'])
+            currency = 'LSL'  # Lesotho Loti
 
-        # Collateral
-        collateral_type = random.choice(self.collateral_types)
-        collateral_value = round(outstanding_balance * random.uniform(0.8, 2.0), 2)
+            # Small chance of ZAR account
+            if random.random() < 0.15:
+                currency = 'ZAR'
 
-        # Risk parameters
-        pd = round(random.uniform(0.01, 0.25), 4)  # Probability of default
-        lgd = round(random.uniform(0.25, 0.75), 4)  # Loss given default
-        ead = round(outstanding_balance + accrued_interest, 2)  # Exposure at default
+            balance = round(random.uniform(500, 500000), 2)
 
-        # Risk weight based on Basel standards
-        if days_past_due > 90:
-            risk_weight = 1.5
-        elif pd > 0.15:
-            risk_weight = 1.0
+            # If it's a loan account, balance is 0 initially (disbursed in loans table)
+            if acc_type == 'LOAN':
+                balance = 0
+
+            sql = """
+                INSERT INTO cbs.accounts (
+                    customer_id, account_type, currency, balance, available_balance, status
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING account_id, account_type
+            """
+
+            cursor.execute(sql, (cust_id, acc_type, currency, balance, balance, 'ACTIVE'))
+            row = cursor.fetchone()
+
+            # Store ID if it's a LOAN account for the next step
+            if row[1] == 'LOAN':
+                account_ids.append(row[0])
+
+    conn.commit()
+    print("Accounts inserted.")
+    return account_ids
+
+
+def insert_loans_and_performance(conn, loan_account_ids):
+    print(f"--- Generating Loans and Performance for {len(loan_account_ids)} Accounts ---")
+    cursor = conn.cursor()
+
+    for acc_id in loan_account_ids:
+        # Loan Details
+        principal = round(random.uniform(10000, 5000000), 2)
+        outstanding = principal * float.__float__(random.uniform(0.1, 1.0))  # Outstanding is 10-100% of principal
+        rate = round(random.uniform(0.09, 0.28), 4)  # 9% to 28% interest
+
+        origination = fake.date_between(start_date='-5y', end_date='-1y')
+        term_months = random.choice([12, 24, 36, 60, 120, 240])  # Months
+        maturity = origination + timedelta(days=term_months * 30)
+
+        # Collateral logic
+        prod_type = random.choice(['MORTGAGE', 'AUTO', 'PERSONAL', 'SME_LOAN'])
+        collateral_type = 'NONE'
+        collateral_val = 0
+
+        if prod_type == 'MORTGAGE':
+            collateral_type = 'PROPERTY'
+            collateral_val = principal * float.__float__(1.2)  # 120% coverage
+            purpose = 'RESIDENTIAL'
+        elif prod_type == 'AUTO':
+            collateral_type = 'VEHICLE'
+            collateral_val = principal
+            purpose = 'VEHICLE_PURCHASE'
         else:
-            risk_weight = round(random.uniform(0.35, 1.0), 4)
+            purpose = 'GENERAL_CONSUMPTION'
 
-        npl_status = days_past_due > 90
+        # Performance / Delinquency Simulation
+        # 85% chance of being a good payer (0 DPD)
+        is_delinquent = random.random() > 0.85
+        days_past_due = 0
 
-        return {
-            'loan_id': loan_id,
-            'account_id': account_id,
-            'outstanding_balance': outstanding_balance,
-            'accrued_interest': accrued_interest,
-            'days_past_due': days_past_due,
-            'collateral_value': collateral_value,
-            'collateral_type': collateral_type,
-            'probability_of_default': pd,
-            'loss_given_default': lgd,
-            'exposure_at_default': ead,
-            'risk_weight': risk_weight,
-            'npl_status': npl_status,
-            'snapshot_date': datetime.now().date().isoformat()
-        }
+        if is_delinquent:
+            days_past_due = random.randint(1, 200)
 
-    def generate_off_balance_sheet_exposure(self) -> Dict:
-        """Generate off-balance sheet exposure"""
-        exposure_types = ['GUARANTEE', 'LETTER_OF_CREDIT', 'COMMITMENT']
-        ccf_map = {  # Credit conversion factors
-            'GUARANTEE': 1.0,
-            'LETTER_OF_CREDIT': 0.5,
-            'COMMITMENT': 0.2
-        }
+        asset_class = determine_asset_class(days_past_due)
+        stage = determine_ifrs9_stage(asset_class)
 
-        exposure_type = random.choice(exposure_types)
-        notional_amount = round(random.uniform(50000, 2000000), 2)
-
-        return {
-            'obs_id': str(uuid.uuid4()),
-            'bank_id': self.bank_id,
-            'exposure_type': exposure_type,
-            'notional_amount': notional_amount,
-            'credit_conversion_factor': ccf_map[exposure_type],
-            'counterparty_sector': random.choice(self.sectors),
-            'snapshot_date': datetime.now().date().isoformat()
-        }
-
-    def generate_capital_component(self) -> Dict:
-        """Generate capital component data"""
-        capital_types = ['CET1', 'AT1', 'T2']
-        capital_type = random.choice(capital_types)
-
-        # Realistic capital amounts
-        amount_ranges = {
-            'CET1': (5000000, 50000000),
-            'AT1': (1000000, 10000000),
-            'T2': (500000, 5000000)
-        }
-
-        amount = round(random.uniform(*amount_ranges[capital_type]), 2)
-        eligible = random.random() > 0.1  # 90% eligible
-
-        return {
-            'capital_id': str(uuid.uuid4()),
-            'bank_id': self.bank_id,
-            'capital_type': capital_type,
-            'amount': amount,
-            'eligible': eligible,
-            'snapshot_date': datetime.now().date().isoformat()
-        }
-
-    def generate_liquidity_cashflow(self) -> Dict:
-        """Generate liquidity cashflow data"""
-        flow_type = random.choice(['INFLOW', 'OUTFLOW'])
-        maturity_buckets = ['0-7d', '8-30d', '31-90d', '91-180d', '181-365d']
-
-        amount = round(random.uniform(100000, 10000000), 2)
-        stress_factor = round(random.uniform(0.5, 1.0), 4)
-
-        return {
-            'cashflow_id': str(uuid.uuid4()),
-            'bank_id': self.bank_id,
-            'flow_type': flow_type,
-            'amount': amount,
-            'currency': self.currency,
-            'maturity_bucket': random.choice(maturity_buckets),
-            'stress_factor': stress_factor,
-            'snapshot_date': datetime.now().date().isoformat()
-        }
-
-    def send_to_api(self, endpoint: str, data: Dict) -> bool:
-        """Send data to API endpoint"""
-        try:
-            url = f"{self.api_endpoint}/{endpoint}"
-            response = self.session.post(url, json=data, timeout=10)
-
-            if response.status_code in [200, 201]:
-                logger.info(f"✓ Sent {endpoint}: {data.get('loan_id', data.get('obs_id', 'N/A'))[:8]}...")
-                return True
-            else:
-                logger.error(f"✗ Failed {endpoint}: {response.status_code} - {response.text}")
-                return False
-        except requests.exceptions.RequestException as e:
-            logger.error(f"✗ API Error on {endpoint}: {str(e)}")
-            return False
-
-    def run_simulation(self, duration_hours: int = 2, transactions_per_minute: int = 5):
+        # Insert Loan
+        sql_loan = """
+            INSERT INTO cbs.loans (
+                account_id, principal_amount, outstanding_balance, interest_rate,
+                origination_date, maturity_date, collateral_value, collateral_type,
+                product_type, loan_purpose, asset_class, stage, 
+                original_term_months, remaining_term_months
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING loan_id
         """
-        Run the simulation for specified duration
 
-        Args:
-            duration_hours: How long to run the simulation
-            transactions_per_minute: Rate of transaction generation
+        cursor.execute(sql_loan, (
+            acc_id, principal, outstanding, rate, origination, maturity,
+            collateral_val, collateral_type, prod_type, purpose,
+            asset_class, stage, term_months, max(0, term_months - 12)
+        ))
+        loan_id = cursor.fetchone()[0]
+
+        # Insert Performance
+        sql_perf = """
+            INSERT INTO cbs.loan_performance (
+                loan_id, days_past_due, last_payment_date, last_payment_amount
+            ) VALUES (%s, %s, %s, %s)
         """
-        logger.info(f"Starting simulation for {duration_hours} hours at {transactions_per_minute} tx/min")
+        last_pay = datetime.now() - timedelta(days=days_past_due) if days_past_due > 0 else datetime.now()
+        cursor.execute(sql_perf, (loan_id, days_past_due, last_pay, principal / term_months))
 
-        end_time = datetime.now() + timedelta(hours=duration_hours)
-        transaction_count = 0
+    conn.commit()
+    print("Loans and Performance data inserted.")
 
-        while datetime.now() < end_time:
-            try:
-                # Generate and send transactions
-                for _ in range(transactions_per_minute):
-                    # Generate complete transaction flow
-                    customer = self.generate_customer()
-                    account = self.generate_account(customer['customer_id'], 'LOAN')
-                    loan = self.generate_loan_exposure(account['account_id'])
 
-                    # Send to API (modify endpoints as needed)
-                    self.send_to_api('customers', customer)
-                    self.send_to_api('accounts', account)
-                    self.send_to_api('loan_exposures', loan)
+def insert_capital_components(conn):
+    print("--- Generating Basel III Capital Components ---")
+    cursor = conn.cursor()
 
-                    # Occasionally generate other transaction types
-                    if random.random() < 0.3:
-                        obs = self.generate_off_balance_sheet_exposure()
-                        self.send_to_api('off_balance_sheet', obs)
+    # Realistic Capital stack for a mid-sized Lesotho bank
+    # Amounts in LSL
+    capital_data = [
+        ('CET1', 'Paid Up Ordinary Shares', 500000000, 0),
+        ('CET1', 'Retained Earnings', 250000000, 0),
+        ('CET1', 'Statutory Reserves', 50000000, 0),
+        ('AT1', 'Perpetual Non-Cumulative Pref Shares', 100000000, 0),
+        ('T2', 'Subordinated Debt', 150000000, 0),
+        ('T2', 'General Provisions (Standard Assets)', 25000000, 0),
+    ]
 
-                    if random.random() < 0.1:
-                        capital = self.generate_capital_component()
-                        self.send_to_api('capital_components', capital)
+    sql = """
+        INSERT INTO cbs.capital_components (
+            as_of_date, component_type, component_name, amount, currency, regulatory_adjustment
+        ) VALUES (%s, %s, %s, %s, %s, %s)
+        ON CONFLICT DO NOTHING
+    """
 
-                    if random.random() < 0.2:
-                        cashflow = self.generate_liquidity_cashflow()
-                        self.send_to_api('liquidity_cashflows', cashflow)
+    today = datetime.now().date()
 
-                    transaction_count += 1
+    for row in capital_data:
+        cursor.execute(sql, (today, row[0], row[1], row[2], 'LSL', row[3]))
 
-                # Wait for next minute
-                logger.info(f"Total transactions: {transaction_count} | Unique loans: {len(self.used_loan_ids)}")
-                time.sleep(60)
+    conn.commit()
+    print("Capital Components inserted.")
 
-            except KeyboardInterrupt:
-                logger.info("Simulation stopped by user")
-                break
-            except Exception as e:
-                logger.error(f"Error in simulation loop: {str(e)}")
-                time.sleep(5)
 
-        logger.info(f"Simulation completed. Total transactions: {transaction_count}")
-        self.print_statistics()
+def insert_liquidity_assets(conn):
+    print("--- Generating LCR Liquidity Assets ---")
+    cursor = conn.cursor()
 
-    def print_statistics(self):
-        """Print simulation statistics"""
-        print("\n" + "=" * 50)
-        print("SIMULATION STATISTICS")
-        print("=" * 50)
-        print(f"Unique Accounts Created: {len(self.used_account_ids)}")
-        print(f"Unique Loans Created: {len(self.used_loan_ids)}")
-        print(f"Bank: {self.bank_data['bank_name']}")
-        print(f"Currency: {self.currency}")
-        print("=" * 50 + "\n")
+    # HQLA Assets
+    assets = [
+        ('CENTRAL_BANK_RESERVES', 'LSL', 120000000, 0.00, 1),  # Level 1, 0% haircut
+        ('GOVT_SECURITIES', 'LSL', 300000000, 0.00, 1),  # Lesotho Govt Bonds, Level 1
+        ('GOVT_SECURITIES', 'ZAR', 150000000, 0.00, 1),  # SA Govt Bonds, Level 1
+        ('CASH', 'LSL', 45000000, 0.00, 1),  # Physical Cash
+        ('CORP_BONDS', 'ZAR', 50000000, 0.15, 2),  # Level 2A, 15% haircut
+    ]
+
+    sql = """
+        INSERT INTO cbs.liquidity_assets (
+            asset_type, currency, market_value, haircut_percentage, 
+            hqla_level, is_unencumbered, as_of_date
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """
+
+    today = datetime.now().date()
+
+    for row in assets:
+        cursor.execute(sql, (row[0], row[1], row[2], row[3], row[4], True, today))
+
+    conn.commit()
+    print("Liquidity Assets inserted.")
+
+
+# MAIN EXECUTION
+
+def main():
+    global conn
+    try:
+        conn = get_db_connection()
+        print("Connected to Database.")
+
+        # 1. Create Customers
+        cust_ids = insert_customers(conn, count=100)
+
+        # 2. Create Accounts
+        acc_ids = insert_accounts(conn, cust_ids)
+
+        # 3. Create Loans & Performance (Only for accounts typed as LOAN)
+        insert_loans_and_performance(conn, acc_ids)
+
+        # 4. Create Regulatory Data
+        insert_capital_components(conn)
+        insert_liquidity_assets(conn)
+
+        print("\nSUCCESS: Dummy data generation complete.")
+
+    except Exception as e:
+        print(f"ERROR: {e}")
+    finally:
+        if conn:
+            conn.close()
 
 
 if __name__ == "__main__":
-    # Configuration
-    API_ENDPOINT = "http://localhost:8000/api/v1"  # Change to your API endpoint
-    API_KEY = None  # Add your API key if required
-
-    # Initialize simulator
-    simulator = LesothoBankSimulator(
-        api_endpoint=API_ENDPOINT,
-        api_key=API_KEY
-    )
-
-    # Run simulation
-    # For testing: 0.1 hours = 6 minutes
-    # For production: 24 hours = full day
-    simulator.run_simulation(
-        duration_hours=2,
-        transactions_per_minute=5
-    )
+    main()
