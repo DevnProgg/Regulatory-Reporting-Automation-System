@@ -46,6 +46,17 @@ public class ScheduledCalculationLauncher {
         run(LocalDate.now().minusDays(1), CalculationType.ANNUAL);
     }
 
+    public void launchCalculationJob(LocalDate snapshotDate, CalculationType type, String initiatedBy) throws Exception {
+        JobParameters params = new JobParametersBuilder()
+                .addString("snapshotDate", snapshotDate.toString())
+                .addString("calculationType", type.name())
+                .addString("initiatedBy", initiatedBy)
+                .addLong("timestamp", System.currentTimeMillis())
+                .toJobParameters();
+        jobLauncher.run(regulatoryCalculationJob, params);
+        log.info("Launched calculation job for date: {}, type: {}", snapshotDate, type);
+    }
+
     private void run(LocalDate snapshotDate, CalculationType type) {
         if (!schedulingEnabled) {
             log.info("Scheduling is disabled. Skipping {} run.", type);

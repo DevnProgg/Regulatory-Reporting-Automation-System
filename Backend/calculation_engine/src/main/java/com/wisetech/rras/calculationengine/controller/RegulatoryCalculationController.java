@@ -30,7 +30,7 @@ public class RegulatoryCalculationController {
 
     /**
      * Trigger a regulatory calculation job manually
-
+*/
     @PostMapping("/calculate")
     public ResponseEntity<Map<String, Object>> triggerCalculation(
             @RequestBody CalculationRequest request) {
@@ -38,7 +38,7 @@ public class RegulatoryCalculationController {
         log.info("Received manual calculation request: {}", request);
 
         try {
-            jobLauncher.(
+            jobLauncher.launchCalculationJob(
                     request.getSnapshotDate(),
                     request.getCalculationType(),
                     request.getInitiatedBy() != null ? request.getInitiatedBy() : "API"
@@ -62,7 +62,7 @@ public class RegulatoryCalculationController {
             return ResponseEntity.internalServerError().body(response);
         }
     }
-**/
+
     /**
      * Get status of a specific snapshot run
      */
