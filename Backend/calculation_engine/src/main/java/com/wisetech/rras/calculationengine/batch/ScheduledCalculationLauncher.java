@@ -65,7 +65,6 @@ public class ScheduledCalculationLauncher {
 
         try {
             // Using UUID for run.id ensures every scheduled run is treated as a unique JobInstance
-            // If you want to prevent re-running the same date/type combination, remove "run.id"
             JobParameters params = new JobParametersBuilder()
                     .addString("snapshotDate", snapshotDate.toString())
                     .addString("calculationType", type.name())
