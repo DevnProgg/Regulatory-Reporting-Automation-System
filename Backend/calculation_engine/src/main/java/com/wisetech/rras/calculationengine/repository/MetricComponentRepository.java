@@ -13,11 +13,11 @@ import java.util.List;
 public interface MetricComponentRepository extends
         JpaRepository<MetricComponent, MetricComponentId> {
 
-    List<MetricComponent> findBySnapshotId(Long snapshotId);
+    List<MetricComponent> findBySnapshotId(int snapshotId);
 
     @Query("SELECT SUM(m.rwaValue) FROM MetricComponent m WHERE m.snapshotId = :snapshotId")
-    BigDecimal getTotalRWA(Long snapshotId);
+    BigDecimal getTotalRWA(int snapshotId);
 
     @Query("SELECT SUM(m.eclAmount) FROM MetricComponent m WHERE m.snapshotId = :snapshotId")
-    BigDecimal getTotalECL(Long snapshotId);
+    BigDecimal getTotalECL(int snapshotId);
 }

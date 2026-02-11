@@ -67,7 +67,7 @@ public class RegulatoryCalculationController {
      * Get status of a specific snapshot run
      */
     @GetMapping("/snapshot/{snapshotId}")
-    public ResponseEntity<SnapshotRun> getSnapshotStatus(@PathVariable Long snapshotId) {
+    public ResponseEntity<SnapshotRun> getSnapshotStatus(@PathVariable int snapshotId) {
         return snapshotRunRepository.findById(snapshotId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -93,7 +93,7 @@ public class RegulatoryCalculationController {
      */
     @GetMapping("/snapshot/{snapshotId}/metrics")
     public ResponseEntity<List<RegulatoryMetric>> getSnapshotMetrics(
-            @PathVariable Long snapshotId) {
+            @PathVariable int snapshotId) {
 
         List<RegulatoryMetric> metrics = metricRepository.findBySnapshotId(snapshotId);
         return ResponseEntity.ok(metrics);

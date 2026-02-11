@@ -11,9 +11,9 @@ import java.util.Optional;
 @Repository
 public interface RegulatoryMetricRepository extends JpaRepository<RegulatoryMetric, Long> {
 
-    List<RegulatoryMetric> findBySnapshotId(Long snapshotId);
+    List<RegulatoryMetric> findBySnapshotId(int snapshotId);
 
-    Optional<RegulatoryMetric> findBySnapshotIdAndMetricCode(Long snapshotId, String metricCode);
+    Optional<RegulatoryMetric> findBySnapshotIdAndMetricCode(int snapshotId, String metricCode);
 
     @Query("SELECT r FROM RegulatoryMetric r WHERE r.metricCode = :metricCode " +
             "ORDER BY r.snapshotId DESC")

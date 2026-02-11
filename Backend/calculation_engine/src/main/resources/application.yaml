@@ -1,6 +1,7 @@
 spring:
   application:
     name: calculation_engine
+
   datasource:
     url: jdbc:postgresql://localhost:5432/BankingSystemDB
     username: lauren
@@ -9,8 +10,35 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate      # auto-creates/updates tables. Use 'validate' in production.
-    show-sql: true            # prints SQL to console (useful for debugging)
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 10
+
+# ⬇⬇⬇ CUSTOM CONFIG (outside spring)
+rabbitmq:
+  exchange:
+    calculation: calculation.exchange
+
+  queue:
+    calculation:
+      rwa: calculation.rwa.queue
+      car: calculation.car.queue
+      lcr: calculation.lcr.queue
+      npl: calculation.npl.queue
+      ecl: calculation.ecl.queue
+
+    snapshot: calculation.snapshot.queue
+    notification: calculation.notification.queue

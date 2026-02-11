@@ -19,7 +19,7 @@ public class MetricComponent {
 
     @Id
     @Column(name = "snapshot_id")
-    private Long snapshotId;
+    private int snapshotId;
 
     @Id
     @Column(name = "loan_id")

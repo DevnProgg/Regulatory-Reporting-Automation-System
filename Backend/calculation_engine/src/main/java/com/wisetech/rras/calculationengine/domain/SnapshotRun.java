@@ -22,7 +22,7 @@ public class SnapshotRun {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "snapshot_id")
-    private Long snapshotId;
+    private int snapshotId;
 
     @Column(name = "snapshot_date", nullable = false)
     private LocalDate snapshotDate;

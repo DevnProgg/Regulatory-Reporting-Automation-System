@@ -10,6 +10,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MetricComponentId implements Serializable {
-    private Long snapshotId;
+    private int snapshotId;
     private Long loanId;
 }

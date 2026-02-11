@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface SnapshotRunRepository extends JpaRepository<SnapshotRun, Long> {
+public interface SnapshotRunRepository extends JpaRepository<SnapshotRun, Integer> {
 
     Optional<SnapshotRun> findBySnapshotDateAndCalculationType(
             LocalDate snapshotDate,

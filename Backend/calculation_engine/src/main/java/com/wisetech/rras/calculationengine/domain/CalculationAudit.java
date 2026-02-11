@@ -20,10 +20,10 @@ public class CalculationAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "audit_id")
-    private Long auditId;
+    private long auditId;
 
     @Column(name = "snapshot_id", nullable = false)
-    private Long snapshotId;
+    private int snapshotId;
 
     @Column(name = "calculation_step", nullable = false, length = 100)
     private String calculationStep;

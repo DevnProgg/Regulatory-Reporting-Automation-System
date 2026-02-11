@@ -59,7 +59,7 @@ public class ECLCalculationService {
     private BigDecimal stage3MinProvision;
 
     @Transactional
-    public BigDecimal calculateECL(Long snapshotId) {
+    public BigDecimal calculateECL(int snapshotId) {
         long startTime = System.currentTimeMillis();
         log.info("Starting ECL calculation for snapshot {}", snapshotId);
 
@@ -229,7 +229,7 @@ public class ECLCalculationService {
         return exposure.multiply(rate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     }
 
-    private void updateMetricComponentWithECL(Long snapshotId, Long loanId,
+    private void updateMetricComponentWithECL(int snapshotId, Long loanId,
                                               BigDecimal eclAmount, Integer stage) {
         MetricComponentId id = new MetricComponentId(snapshotId, loanId);
         metricComponentRepository.findById(id).ifPresent(component -> {
@@ -248,7 +248,7 @@ public class ECLCalculationService {
                 .divide(nplAmount, 2, RoundingMode.HALF_UP);
     }
 
-    private void saveMetric(Long snapshotId, String metricCode, BigDecimal value, String unit) {
+    private void saveMetric(int snapshotId, String metricCode, BigDecimal value, String unit) {
         RegulatoryMetric metric = RegulatoryMetric.builder()
                 .snapshotId(snapshotId)
                 .metricCode(metricCode)
@@ -259,7 +259,7 @@ public class ECLCalculationService {
         regulatoryMetricRepository.save(metric);
     }
 
-    private void auditCalculation(Long snapshotId, String step, int loanCount,
+    private void auditCalculation(int snapshotId, String step, int loanCount,
                                   BigDecimal totalECL, BigDecimal coverageRatio,
                                   long executionTime) {
         try {

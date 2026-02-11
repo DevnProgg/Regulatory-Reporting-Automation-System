@@ -14,7 +14,7 @@ import java.util.List;
 public interface LoanExposureSnapshotRepository extends
         JpaRepository<LoanExposureSnapshot, LoanExposureSnapshotId> {
 
-    List<LoanExposureSnapshot> findBySnapshotId(Long snapshotId);
+    List<LoanExposureSnapshot> findBySnapshotId(int snapshotId);
 
     @Query("SELECT l FROM LoanExposureSnapshot l WHERE l.snapshotId = :snapshotId " +
             "AND l.assetClass IN :classifications")
@@ -25,9 +25,9 @@ public interface LoanExposureSnapshotRepository extends
 
     @Query("SELECT SUM(l.outstandingBalance) FROM LoanExposureSnapshot l " +
             "WHERE l.snapshotId = :snapshotId")
-    BigDecimal getTotalExposure(Long snapshotId);
+    BigDecimal getTotalExposure(int snapshotId);
 
     @Query("SELECT SUM(l.outstandingBalance) FROM LoanExposureSnapshot l " +
             "WHERE l.snapshotId = :snapshotId AND l.assetClass IN ('SUBSTANDARD', 'DOUBTFUL', 'LOSS')")
-    BigDecimal getNonPerformingLoanAmount(Long snapshotId);
+    BigDecimal getNonPerformingLoanAmount(int snapshotId);
 }

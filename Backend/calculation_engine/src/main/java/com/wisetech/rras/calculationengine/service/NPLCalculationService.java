@@ -42,7 +42,7 @@ public class NPLCalculationService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    public Map<String, BigDecimal> calculateNPL(Long snapshotId) {
+    public Map<String, BigDecimal> calculateNPL(int snapshotId) {
         long startTime = System.currentTimeMillis();
         log.info("Starting NPL calculation for snapshot {}", snapshotId);
 
@@ -130,7 +130,7 @@ public class NPLCalculationService {
                 .divide(denominator, 2, RoundingMode.HALF_UP);
     }
 
-    private void saveMetric(Long snapshotId, String metricCode, BigDecimal value, String unit) {
+    private void saveMetric(int snapshotId, String metricCode, BigDecimal value, String unit) {
         RegulatoryMetric metric = RegulatoryMetric.builder()
                 .snapshotId(snapshotId)
                 .metricCode(metricCode)
@@ -141,7 +141,7 @@ public class NPLCalculationService {
         regulatoryMetricRepository.save(metric);
     }
 
-    private void auditCalculation(Long snapshotId, String step, int totalCount,
+    private void auditCalculation(int snapshotId, String step, int totalCount,
                                   int nplCount, BigDecimal nplAmount,
                                   BigDecimal totalAmount, BigDecimal nplRatio,
                                   long executionTime) {

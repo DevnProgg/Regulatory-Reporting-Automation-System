@@ -39,7 +39,7 @@ public class LCRCalculationService {
     private BigDecimal minLCR;
 
     @Transactional
-    public Map<String, BigDecimal> calculateLCR(Long snapshotId, LocalDate snapshotDate) {
+    public Map<String, BigDecimal> calculateLCR(int snapshotId, LocalDate snapshotDate) {
         long startTime = System.currentTimeMillis();
         log.info("Starting LCR calculation for snapshot {}", snapshotId);
 
@@ -148,7 +148,7 @@ public class LCRCalculationService {
                 .divide(denominator, 2, RoundingMode.HALF_UP);
     }
 
-    private void saveMetric(Long snapshotId, String metricCode, BigDecimal value, String unit) {
+    private void saveMetric(int snapshotId, String metricCode, BigDecimal value, String unit) {
         RegulatoryMetric metric = RegulatoryMetric.builder()
                 .snapshotId(snapshotId)
                 .metricCode(metricCode)
@@ -159,7 +159,7 @@ public class LCRCalculationService {
         regulatoryMetricRepository.save(metric);
     }
 
-    private void auditCalculation(Long snapshotId, String step, BigDecimal hqla,
+    private void auditCalculation(int snapshotId, String step, BigDecimal hqla,
                                   BigDecimal netOutflows, BigDecimal lcr,
                                   boolean compliant, long executionTime) {
         try {

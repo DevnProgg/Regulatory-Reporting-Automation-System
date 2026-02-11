@@ -60,7 +60,7 @@ public class CARCalculationService {
      * Calculate Capital Adequacy Ratio
      */
     @Transactional
-    public Map<String, BigDecimal> calculateCAR(Long snapshotId, LocalDate snapshotDate) {
+    public Map<String, BigDecimal> calculateCAR(int snapshotId, LocalDate snapshotDate) {
         long startTime = System.currentTimeMillis();
         log.info("Starting CAR calculation for snapshot {}", snapshotId);
 
@@ -162,7 +162,7 @@ public class CARCalculationService {
                 .divide(rwa, 2, RoundingMode.HALF_UP);
     }
 
-    private void saveMetric(Long snapshotId, String metricCode, BigDecimal value, String unit) {
+    private void saveMetric(int snapshotId, String metricCode, BigDecimal value, String unit) {
         RegulatoryMetric metric = RegulatoryMetric.builder()
                 .snapshotId(snapshotId)
                 .metricCode(metricCode)
@@ -173,7 +173,7 @@ public class CARCalculationService {
         regulatoryMetricRepository.save(metric);
     }
 
-    private void auditCalculation(Long snapshotId, String step,
+    private void auditCalculation(int snapshotId, String step,
                                   Map<String, BigDecimal> capital,
                                   BigDecimal rwa, BigDecimal car,
                                   boolean compliant, long executionTime) {

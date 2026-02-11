@@ -119,8 +119,8 @@ public class RegulatoryCalculationJobConfig {
 
     private Tasklet copyLoanDataTasklet() {
         return (contribution, chunkContext) -> {
-            Long snapshotId = chunkContext.getStepContext().getStepExecution()
-                    .getJobExecution().getExecutionContext().getLong("snapshotId");
+            int snapshotId = chunkContext.getStepContext().getStepExecution()
+                    .getJobExecution().getExecutionContext().getInt("snapshotId");
 
             log.info("Copying loan data to snapshot {}", snapshotId);
 
@@ -228,8 +228,8 @@ public class RegulatoryCalculationJobConfig {
 
     private Tasklet validateSnapshotTasklet() {
         return (contribution, chunkContext) -> {
-            Long snapshotId = chunkContext.getStepContext().getStepExecution()
-                    .getJobExecution().getExecutionContext().getLong("snapshotId");
+            int snapshotId = chunkContext.getStepContext().getStepExecution()
+                    .getJobExecution().getExecutionContext().getInt("snapshotId");
 
             Integer loanCount = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM snapshots.loan_exposures_snapshot WHERE snapshot_id = ?",
@@ -255,8 +255,8 @@ public class RegulatoryCalculationJobConfig {
     private Step createCalculationStep(String stepName, String calcType, Runnable calcAction) {
         return new StepBuilder(stepName, jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    Long snapshotId = chunkContext.getStepContext().getStepExecution()
-                            .getJobExecution().getExecutionContext().getLong("snapshotId");
+                    int snapshotId = chunkContext.getStepContext().getStepExecution()
+                            .getJobExecution().getExecutionContext().getInt("snapshotId");
 
                     log.info("Starting {} Calculation for Snapshot {}", calcType, snapshotId);
                     calcAction.run();
@@ -271,7 +271,7 @@ public class RegulatoryCalculationJobConfig {
     public Step calculateRWAStepImpl() {
         return new StepBuilder("calculateRWA", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    Long id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getLong("snapshotId");
+                    int id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getInt("snapshotId");
                     rwaService.calculateRWA(id);
                     eventPublisher.publishCalculationCompleted(id, "RWA");
                     return RepeatStatus.FINISHED;
@@ -282,7 +282,7 @@ public class RegulatoryCalculationJobConfig {
     public Step calculateNPLStep() {
         return new StepBuilder("calculateNPL", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    Long id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getLong("snapshotId");
+                    int id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getInt("snapshotId");
                     nplService.calculateNPL(id);
                     eventPublisher.publishCalculationCompleted(id, "NPL");
                     return RepeatStatus.FINISHED;
@@ -293,7 +293,7 @@ public class RegulatoryCalculationJobConfig {
     public Step calculateECLStep() {
         return new StepBuilder("calculateECL", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    Long id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getLong("snapshotId");
+                    int id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getInt("snapshotId");
                     eclService.calculateECL(id);
                     eventPublisher.publishCalculationCompleted(id, "ECL");
                     return RepeatStatus.FINISHED;
@@ -304,7 +304,7 @@ public class RegulatoryCalculationJobConfig {
     public Step calculateCARStep() {
         return new StepBuilder("calculateCAR", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    Long id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getLong("snapshotId");
+                    int id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getInt("snapshotId");
                     String dateStr = (String) chunkContext.getStepContext().getJobParameters().get("snapshotDate");
                     carService.calculateCAR(id, LocalDate.parse(dateStr));
                     eventPublisher.publishCalculationCompleted(id, "CAR");
@@ -316,7 +316,7 @@ public class RegulatoryCalculationJobConfig {
     public Step calculateLCRStep() {
         return new StepBuilder("calculateLCR", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    Long id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getLong("snapshotId");
+                    int id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getInt("snapshotId");
                     String dateStr = (String) chunkContext.getStepContext().getJobParameters().get("snapshotDate");
                     lcrService.calculateLCR(id, LocalDate.parse(dateStr));
                     eventPublisher.publishCalculationCompleted(id, "LCR");
@@ -330,7 +330,7 @@ public class RegulatoryCalculationJobConfig {
     public Step finalizeSnapshotStep() {
         return new StepBuilder("finalizeSnapshot", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    Long id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getLong("snapshotId");
+                    int id = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext().getInt("snapshotId");
 
                     snapshotRunRepository.findById(id).ifPresent(snapshot -> {
                         snapshot.setStatus(RunStatus.CALCULATED);

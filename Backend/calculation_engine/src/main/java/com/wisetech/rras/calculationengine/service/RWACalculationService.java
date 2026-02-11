@@ -60,7 +60,7 @@ public class RWACalculationService {
      * This is the main entry point called by the batch job
      */
     @Transactional
-    public BigDecimal calculateRWA(Long snapshotId) {
+    public BigDecimal calculateRWA(int snapshotId) {
         long startTime = System.currentTimeMillis();
         log.info("Starting RWA calculation for snapshot {}", snapshotId);
 
@@ -98,7 +98,7 @@ public class RWACalculationService {
      * Calculate RWA for a single loan
      * Applies appropriate risk weight based on loan characteristics
      */
-    private MetricComponent calculateLoanRWA(Long snapshotId, LoanExposureSnapshot loan) {
+    private MetricComponent calculateLoanRWA(int snapshotId, LoanExposureSnapshot loan) {
         BigDecimal exposureAmount = loan.getOutstandingBalance();
         BigDecimal riskWeight = determineRiskWeight(loan);
 
@@ -192,7 +192,7 @@ public class RWACalculationService {
         }
     }
 
-    private void auditCalculation(Long snapshotId, String step, int inputCount,
+    private void auditCalculation(int snapshotId, String step, int inputCount,
                                   BigDecimal output, long executionTime) {
         try {
             Map<String, Object> inputData = new HashMap<>();

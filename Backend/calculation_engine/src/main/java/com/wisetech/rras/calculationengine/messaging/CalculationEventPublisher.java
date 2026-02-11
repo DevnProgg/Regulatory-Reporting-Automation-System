@@ -22,7 +22,7 @@ public class CalculationEventPublisher {
     @Value("${rabbitmq.exchange.calculation}")
     private String exchange;
 
-    public void publishSnapshotCreated(Long snapshotId, LocalDate snapshotDate) {
+    public void publishSnapshotCreated(int snapshotId, LocalDate snapshotDate) {
         Map<String, Object> event = new HashMap<>();
         event.put("eventType", "SNAPSHOT_CREATED");
         event.put("snapshotId", snapshotId);
@@ -33,7 +33,7 @@ public class CalculationEventPublisher {
         log.info("Published snapshot created event for snapshot {}", snapshotId);
     }
 
-    public void publishSnapshotValidated(Long snapshotId) {
+    public void publishSnapshotValidated(int snapshotId) {
         Map<String, Object> event = new HashMap<>();
         event.put("eventType", "SNAPSHOT_VALIDATED");
         event.put("snapshotId", snapshotId);
@@ -43,7 +43,7 @@ public class CalculationEventPublisher {
         log.info("Published snapshot validated event for snapshot {}", snapshotId);
     }
 
-    public void publishCalculationCompleted(Long snapshotId, String calculationType) {
+    public void publishCalculationCompleted(int snapshotId, String calculationType) {
         Map<String, Object> event = new HashMap<>();
         event.put("eventType", "CALCULATION_COMPLETED");
         event.put("snapshotId", snapshotId);
@@ -56,7 +56,7 @@ public class CalculationEventPublisher {
                 calculationType, snapshotId);
     }
 
-    public void publishSnapshotCompleted(Long snapshotId) {
+    public void publishSnapshotCompleted(int snapshotId) {
         Map<String, Object> event = new HashMap<>();
         event.put("eventType", "SNAPSHOT_COMPLETED");
         event.put("snapshotId", snapshotId);

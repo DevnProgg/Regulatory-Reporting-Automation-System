@@ -24,7 +24,7 @@ public class RegulatoryMetric {
     private Long metricId;
 
     @Column(name = "snapshot_id", nullable = false)
-    private Long snapshotId;
+    private int snapshotId;
 
     @Column(name = "metric_code", nullable = false, length = 50)
     private String metricCode;
