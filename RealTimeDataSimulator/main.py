@@ -5,11 +5,7 @@ from datetime import datetime, timedelta
 import os
 # CONFIGURATION
 DB_CONFIG = {
-    "dbname": os.getenv("DBNAME"),
-    "user": os.getenv("USERNAME"),
-    "password": os.getenv("PASSWORD"),
     "host": "localhost",
-    "port": os.getenv("PORT"),
 }
 
 

@@ -72,13 +72,13 @@ The Regulatory Calculation Engine is a Spring Boot-based system designed to auto
 
 ### Technology Stack
 
-- **Framework**: Spring Boot 3.2.0
+- **Framework**: Spring Boot 4.0.2
 - **Batch Processing**: Spring Batch
 - **Messaging**: RabbitMQ (Spring AMQP)
 - **Database**: PostgreSQL 14+
 - **ORM**: Spring Data JPA / Hibernate
 - **Build Tool**: Maven
-- **Java Version**: 17
+- **Java Version**: 25
 
 ---
 
@@ -328,7 +328,7 @@ Minimum provisioning floors above IFRS 9 model:
 
 ### Prerequisites
 
-1. **Java 17+**
+1. **Java 25**
    ```bash
    java -version
    ```
@@ -352,13 +352,10 @@ Minimum provisioning floors above IFRS 9 model:
 
 1. **Create Database**:
    ```sql
-   CREATE DATABASE banking_system;
+   CREATE DATABASE BankingSystemDB;
    ```
 
-2. **Run Enhanced Schema**:
-   ```bash
-   psql -U postgres -d banking_system -f schema-enhanced.sql
-   ```
+
 
 3. **Verify Schemas**:
    ```sql
@@ -389,19 +386,23 @@ Minimum provisioning floors above IFRS 9 model:
    cd regulatory-calc-engine
    ```
 
-2. **Configure Database** (`application.properties`):
-   ```properties
-   spring.datasource.url=jdbc:postgresql://localhost:5432/banking_system
-   spring.datasource.username=your_username
-   spring.datasource.password=your_password
+2. **Configure Database** (`application.yaml`):
+   ```yaml
+   spring:
+     datasource:
+       url: jdbc:postgresql://localhost:5432/BankingSystemDB
+       username: your_username
+       password: your_password
    ```
 
-3. **Configure RabbitMQ** (`application.properties`):
-   ```properties
-   spring.rabbitmq.host=localhost
-   spring.rabbitmq.port=5672
-   spring.rabbitmq.username=guest
-   spring.rabbitmq.password=guest
+3. **Configure RabbitMQ** (`application.yaml`):
+   ```yaml
+   spring:
+     rabbitmq:
+       host: localhost
+       port: 5672
+       username: guest
+       password: guest
    ```
 
 4. **Build Application**:
@@ -432,8 +433,9 @@ The engine runs automatically on these schedules:
 3. **Annual**: January 1st at midnight
 
 To disable scheduling:
-```properties
-scheduling.enabled=false
+```yaml
+scheduling:
+  enabled: false
 ```
 
 ### Manual Execution via API
@@ -441,7 +443,7 @@ scheduling.enabled=false
 #### Trigger Calculation
 
 ```bash
-POST /api/regulatory/calculate
+POST /api/regulatory-engine/calculate
 Content-Type: application/json
 
 {
@@ -461,69 +463,11 @@ Content-Type: application/json
 }
 ```
 
-#### Check Snapshot Status
 
-```bash
-GET /api/regulatory/snapshot/123
-```
 
-**Response**:
-```json
-{
-  "snapshotId": 123,
-  "snapshotDate": "2024-12-31",
-  "calculationType": "MONTHLY",
-  "status": "CALCULATED",
-  "createdAt": "2024-12-31T02:00:00Z",
-  "calculatedAt": "2024-12-31T02:15:32Z"
-}
-```
 
-#### Get Metrics
 
-```bash
-GET /api/regulatory/snapshot/123/metrics
-```
 
-**Response**:
-```json
-[
-  {
-    "metricId": 1,
-    "metricCode": "CAR",
-    "value": 16.75,
-    "unit": "PERCENTAGE"
-  },
-  {
-    "metricId": 2,
-    "metricCode": "NPL_RATIO",
-    "value": 3.25,
-    "unit": "PERCENTAGE"
-  }
-]
-```
-
-#### Dashboard View
-
-```bash
-GET /api/regulatory/dashboard
-```
-
-**Response**:
-```json
-{
-  "snapshotId": 123,
-  "snapshotDate": "2024-12-31",
-  "status": "CALCULATED",
-  "metrics": {
-    "CAR": { "value": 16.75, "unit": "PERCENTAGE" },
-    "CET1_RATIO": { "value": 12.50, "unit": "PERCENTAGE" },
-    "LCR": { "value": 125.30, "unit": "PERCENTAGE" },
-    "NPL_RATIO": { "value": 3.25, "unit": "PERCENTAGE" },
-    "TOTAL_ECL": { "value": 45000000, "unit": "CURRENCY" }
-  }
-}
-```
 
 ---
 
@@ -531,7 +475,7 @@ GET /api/regulatory/dashboard
 
 ### Base URL
 ```
-http://localhost:8080/api/regulatory
+http://localhost:8080/api/regulatory-engine
 ```
 
 ### Endpoints
@@ -539,11 +483,6 @@ http://localhost:8080/api/regulatory
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/calculate` | Trigger calculation job |
-| GET | `/snapshot/{id}` | Get snapshot status |
-| GET | `/snapshots?date={date}` | Get all snapshots for date |
-| GET | `/snapshot/{id}/metrics` | Get all metrics for snapshot |
-| GET | `/metrics/{code}/history` | Get metric history |
-| GET | `/dashboard` | Get latest dashboard data |
 
 ### Calculation Types
 
@@ -582,17 +521,14 @@ http://localhost:8080/api/regulatory
 
 ### Cron Expressions
 
-Configure in `application.properties`:
+Configure in `application.yaml`:
 
-```properties
-# Bi-weekly: 1st and 15th at 2 AM
-scheduling.cron.biweekly=0 0 2 1,15 * ?
-
-# Monthly: 1st of month at 1 AM
-scheduling.cron.monthly=0 0 1 1 * ?
-
-# Annual: January 1st at midnight
-scheduling.cron.annual=0 0 0 1 1 ?
+```yaml
+scheduling:
+  cron:
+    biweekly: "0 0 2 1,15 * ?"
+    monthly: "0 0 1 1 * ?"
+    annual: "0 0 0 1 1 ?"
 ```
 
 ### Custom Schedules
@@ -744,7 +680,7 @@ To recalculate historical data with updated logic:
 **Symptom**: Scheduled jobs don't run
 
 **Solutions**:
-- Check `scheduling.enabled=true` in `application.properties`
+- Check `scheduling.enabled: true` in `application.yaml`
 - Verify cron expressions
 - Check application logs for scheduler initialization
 
@@ -758,7 +694,7 @@ grep "Scheduled" logs/regulatory-calc-engine.log
 
 **Solutions**:
 - Verify PostgreSQL is running: `pg_isready`
-- Check connection string in `application.properties`
+- Check connection string in `application.yaml`
 - Verify schemas exist: `\dn` in psql
 
 #### 3. RabbitMQ Connection Failed
@@ -767,7 +703,7 @@ grep "Scheduled" logs/regulatory-calc-engine.log
 
 **Solutions**:
 - Verify RabbitMQ is running: `rabbitmqctl status`
-- Check connection parameters in `application.properties`
+- Check connection parameters in `application.yaml`
 - Ensure RabbitMQ is accepting connections on port 5672
 
 #### 4. No Loan Data in Snapshot
@@ -789,16 +725,18 @@ grep "Scheduled" logs/regulatory-calc-engine.log
 **Solutions**:
 - Review audit trail for specific snapshot
 - Check input data quality
-- Verify risk weight parameters in `application.properties`
+- Verify risk weight parameters in `application.yaml`
 - Review calculation rules in service classes
 
 ### Logging
 
 #### Enable Debug Logging
 
-```properties
-logging.level.com.regulatory=DEBUG
-logging.level.org.springframework.batch=DEBUG
+```yaml
+logging:
+  level:
+    com.regulatory: DEBUG
+    org.springframework.batch: DEBUG
 ```
 
 #### View Logs
@@ -866,12 +804,15 @@ For large portfolios (>100K loans), consider:
 
 ### RabbitMQ Tuning
 
-```properties
-# Increase prefetch for better throughput
-spring.rabbitmq.listener.simple.prefetch=20
-
-# Connection pooling
-spring.rabbitmq.cache.connection.size=25
+```yaml
+spring:
+  rabbitmq:
+    listener:
+      simple:
+        prefetch: 20
+    cache:
+      connection:
+        size: 25
 ```
 
 ---
@@ -888,9 +829,13 @@ Via Actuator:
 
 ### Prometheus Integration
 
-Add to `application.properties`:
-```properties
-management.metrics.export.prometheus.enabled=true
+Add to `application.yaml`:
+```yaml
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 ```
 
 Access: `http://localhost:8080/actuator/prometheus`
@@ -1004,13 +949,13 @@ LIMIT 12;
 
 | Queue Name | Purpose | TTL | DLQ |
 |------------|---------|-----|-----|
-| `regulatory.calculation.rwa` | RWA calculation events | 1 hour | Yes |
-| `regulatory.calculation.car` | CAR calculation events | 1 hour | Yes |
-| `regulatory.calculation.lcr` | LCR calculation events | 1 hour | Yes |
-| `regulatory.calculation.npl` | NPL calculation events | 1 hour | Yes |
-| `regulatory.calculation.ecl` | ECL calculation events | 1 hour | Yes |
-| `regulatory.snapshot.queue` | Snapshot lifecycle events | 1 hour | Yes |
-| `regulatory.notification.queue` | Notifications | 24 hours | Yes |
+| `calculation.rwa.queue` | RWA calculation events | 1 hour | Yes |
+| `calculation.car.queue` | CAR calculation events | 1 hour | Yes |
+| `calculation.lcr.queue` | LCR calculation events | 1 hour | Yes |
+| `calculation.npl.queue` | NPL calculation events | 1 hour | Yes |
+| `calculation.ecl.queue` | ECL calculation events | 1 hour | Yes |
+| `calculation.snapshot.queue` | Snapshot lifecycle events | 1 hour | Yes |
+| `calculation.notification.queue` | Notifications | 24 hours | Yes |
 
 ### Routing Keys
 
