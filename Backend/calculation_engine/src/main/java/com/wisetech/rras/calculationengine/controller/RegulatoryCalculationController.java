@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/regulatory")
+@RequestMapping("/api/regulatory-engine/")
 @Slf4j
 @RequiredArgsConstructor
 public class RegulatoryCalculationController {
@@ -30,7 +30,7 @@ public class RegulatoryCalculationController {
 
     /**
      * Trigger a regulatory calculation job manually
-*/
+    */
     @PostMapping("/calculate")
     public ResponseEntity<Map<String, Object>> triggerCalculation(
             @RequestBody CalculationRequest request) {
@@ -65,17 +65,17 @@ public class RegulatoryCalculationController {
 
     /**
      * Get status of a specific snapshot run
-     */
+
     @GetMapping("/snapshot/{snapshotId}")
     public ResponseEntity<SnapshotRun> getSnapshotStatus(@PathVariable int snapshotId) {
         return snapshotRunRepository.findById(snapshotId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
-    }
+    }*/
 
     /**
      * Get all snapshots for a specific date
-     */
+
     @GetMapping("/snapshots")
     public ResponseEntity<List<SnapshotRun>> getSnapshots(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -86,7 +86,7 @@ public class RegulatoryCalculationController {
                 .toList();
 
         return ResponseEntity.ok(snapshots);
-    }
+    }*/
 
     /**
      * Get all metrics for a snapshot
@@ -101,7 +101,7 @@ public class RegulatoryCalculationController {
 
     /**
      * Get a specific metric across time
-     */
+
     @GetMapping("/metrics/{metricCode}/history")
     public ResponseEntity<List<RegulatoryMetric>> getMetricHistory(
             @PathVariable String metricCode,
@@ -115,10 +115,10 @@ public class RegulatoryCalculationController {
 
         return ResponseEntity.ok(metrics);
     }
-
+     */
     /**
      * Get summary dashboard data for latest snapshot
-     */
+
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboard() {
         List<SnapshotRun> snapshots = snapshotRunRepository.findAll();
@@ -149,6 +149,7 @@ public class RegulatoryCalculationController {
 
         return ResponseEntity.ok(dashboard);
     }
+     */
 
     @Data
     public static class CalculationRequest {

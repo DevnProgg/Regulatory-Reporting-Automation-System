@@ -10,6 +10,7 @@ import com.wisetech.rras.calculationengine.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -24,6 +25,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 @Configuration
@@ -81,33 +83,63 @@ public class RegulatoryCalculationJobConfig {
 
     private Tasklet createSnapshotTasklet() {
         return (contribution, chunkContext) -> {
-            Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
 
-            LocalDate snapshotDate = LocalDate.parse((String) jobParams.get("snapshotDate"));
+            Map<String, Object> jobParams =
+                    chunkContext.getStepContext().getJobParameters();
+
+            String snapshotDateStr = (String) jobParams.get("snapshotDate");
+
+            if (snapshotDateStr == null) {
+                throw new IllegalArgumentException(
+                        "Missing required job parameter: snapshotDate"
+                );
+            }
+
+            LocalDate snapshotDate;
+            try {
+                snapshotDate = LocalDate.parse(snapshotDateStr);
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException(
+                        "Invalid snapshotDate format. Expected ISO-8601 yyyy-MM-dd",
+                        e
+                );
+            }
+
             String typeStr = (String) jobParams.get("calculationType");
-            CalculationType calcType = CalculationType.valueOf(typeStr);
-            String initiatedBy = (String) jobParams.getOrDefault("initiatedBy", "SYSTEM");
+            CalculationType calcType =
+                    typeStr != null ? CalculationType.valueOf(typeStr)
+                            : CalculationType.MONTHLY;
+
+            String initiatedBy =
+                    (String) jobParams.getOrDefault("initiatedBy", "SYSTEM");
 
             log.info("Creating snapshot for date: {}, type: {}", snapshotDate, calcType);
 
-            SnapshotRun snapshot = SnapshotRun.builder()
-                    .snapshotDate(snapshotDate)
-                    .calculationType(calcType)
-                    .status(RunStatus.DRAFT)
-                    .initiatedBy(initiatedBy)
-                    .createdAt(ZonedDateTime.now())
-                    .build();
+            SnapshotRun snapshot = snapshotRunRepository.save(
+                    SnapshotRun.builder()
+                            .snapshotDate(snapshotDate)
+                            .calculationType(calcType)
+                            .status(RunStatus.DRAFT)
+                            .initiatedBy(initiatedBy)
+                            .createdAt(ZonedDateTime.now())
+                            .build()
+            );
 
-            snapshot = snapshotRunRepository.save(snapshot);
+            chunkContext.getStepContext()
+                    .getStepExecution()
+                    .getJobExecution()
+                    .getExecutionContext()
+                    .putInt("snapshotId", snapshot.getSnapshotId());
 
-            // Pass Snapshot ID to future steps via Job Execution Context
-            chunkContext.getStepContext().getStepExecution().getJobExecution()
-                    .getExecutionContext().putLong("snapshotId", snapshot.getSnapshotId());
+            eventPublisher.publishSnapshotCreated(
+                    snapshot.getSnapshotId(), snapshotDate
+            );
 
-            eventPublisher.publishSnapshotCreated(snapshot.getSnapshotId(), snapshotDate);
             return RepeatStatus.FINISHED;
         };
     }
+
+
 
     //  Copy Loan Data (ELT)
     @Bean
@@ -134,7 +166,7 @@ public class RegulatoryCalculationJobConfig {
                     asset_class, stage, is_restructured, is_forborne,
                     maturity_date, remaining_term_months, currency
                 )
-                SELECT 
+                SELECT\s
                     ?, loan_id, customer_id, customer_type, country,
                     country_risk_rating, internal_rating, pd_value, lgd_value,
                     is_financial_inst, is_public_sector, principal_amount,
@@ -143,7 +175,7 @@ public class RegulatoryCalculationJobConfig {
                     asset_class, stage, is_restructured, is_forborne,
                     maturity_date, remaining_term_months, currency
                 FROM source_read.loan_exposures
-                """;
+               \s""";
 
             int rows = jdbcTemplate.update(sql, snapshotId);
             log.info("Copied {} loan records to snapshot {}", rows, snapshotId);
@@ -161,12 +193,27 @@ public class RegulatoryCalculationJobConfig {
 
     private Tasklet copyCapitalDataTasklet() {
         return (contribution, chunkContext) -> {
-            Long snapshotId = chunkContext.getStepContext().getStepExecution()
-                    .getJobExecution().getExecutionContext().getLong("snapshotId");
+            int snapshotId = chunkContext.getStepContext().getStepExecution()
+                    .getJobExecution().getExecutionContext().getInt("snapshotId");
 
             // Retrieve job param safely
-            String dateStr = (String) chunkContext.getStepContext().getJobParameters().get("snapshotDate");
-            LocalDate snapshotDate = LocalDate.parse(dateStr);
+            String snapshotDateStr = (String) chunkContext.getStepContext().getJobParameters().get("snapshotDate");
+
+            if (snapshotDateStr == null) {
+                throw new IllegalArgumentException(
+                        "Missing required job parameter: snapshotDate"
+                );
+            }
+
+            LocalDate snapshotDate;
+            try {
+                snapshotDate = LocalDate.parse(snapshotDateStr);
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException(
+                        "Invalid snapshotDate format. Expected ISO-8601 yyyy-MM-dd",
+                        e
+                );
+            }
 
             log.info("Copying capital data to snapshot {}", snapshotId);
 
@@ -197,10 +244,27 @@ public class RegulatoryCalculationJobConfig {
 
     private Tasklet copyLiquidityDataTasklet() {
         return (contribution, chunkContext) -> {
-            Long snapshotId = chunkContext.getStepContext().getStepExecution()
-                    .getJobExecution().getExecutionContext().getLong("snapshotId");
-            String dateStr = (String) chunkContext.getStepContext().getJobParameters().get("snapshotDate");
-            LocalDate snapshotDate = LocalDate.parse(dateStr);
+            int snapshotId = chunkContext.getStepContext().getStepExecution()
+                    .getJobExecution().getExecutionContext().getInt("snapshotId");
+
+            // Retrieve job param safely
+            String snapshotDateStr = (String) chunkContext.getStepContext().getJobParameters().get("snapshotDate");
+
+            if (snapshotDateStr == null) {
+                throw new IllegalArgumentException(
+                        "Missing required job parameter: snapshotDate"
+                );
+            }
+
+            LocalDate snapshotDate;
+            try {
+                snapshotDate = LocalDate.parse(snapshotDateStr);
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException(
+                        "Invalid snapshotDate format. Expected ISO-8601 yyyy-MM-dd",
+                        e
+                );
+            }
 
             String sql = """
                 INSERT INTO snapshots.liquidity_snapshot (

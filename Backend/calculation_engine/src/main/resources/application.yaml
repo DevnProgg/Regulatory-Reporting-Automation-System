@@ -2,6 +2,9 @@ spring:
   application:
     name: calculation_engine
 
+  main:
+    web-application-type: none
+
   datasource:
     url: jdbc:postgresql://localhost:5432/BankingSystemDB
     username: lauren
