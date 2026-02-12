@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.ZonedDateTime;
 
@@ -28,9 +30,11 @@ public class CalculationAudit {
     @Column(name = "calculation_step", nullable = false, length = 100)
     private String calculationStep;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "input_data", columnDefinition = "jsonb")
     private String inputData;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "output_data", columnDefinition = "jsonb")
     private String outputData;
 

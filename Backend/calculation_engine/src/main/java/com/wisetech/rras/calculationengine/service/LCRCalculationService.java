@@ -94,7 +94,7 @@ public class LCRCalculationService {
      */
     private BigDecimal calculateHQLA(LocalDate snapshotDate) {
         String sql = """
-            SELECT SUM(hqla_value) as total_hqla
+            SELECT SUM(hqla_level) as total_hqla
             FROM cbs.liquidity_assets
             WHERE as_of_date = ? AND is_unencumbered = true
             """;
