@@ -1,9 +1,9 @@
+server:
+  port: 3000
+
 spring:
   application:
     name: calculation_engine
-
-  main:
-    web-application-type: none
 
   datasource:
     url: jdbc:postgresql://localhost:5432/BankingSystemDB
@@ -19,18 +19,22 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  batch:
+    job:
+      enabled : false
+
   rabbitmq:
-    host: localhost
+    host:  192.168.104.160
     port: 5672
-    username: guest
-    password: guest
+    username: lauren
+    password: dev
     virtual-host: /
     listener:
       simple:
         acknowledge-mode: manual
         prefetch: 10
 
-# ⬇⬇⬇ CUSTOM CONFIG (outside spring)
+
 rabbitmq:
   exchange:
     calculation: calculation.exchange

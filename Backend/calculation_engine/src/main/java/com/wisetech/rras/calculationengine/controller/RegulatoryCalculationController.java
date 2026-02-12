@@ -40,7 +40,7 @@ public class RegulatoryCalculationController {
         try {
             jobLauncher.launchCalculationJob(
                     request.getSnapshotDate(),
-                    request.getCalculationType(),
+                    request.getCalculationType() != null ? request.getCalculationType() : CalculationType.BI_WEEKLY,
                     request.getInitiatedBy() != null ? request.getInitiatedBy() : "API"
             );
 
@@ -90,7 +90,7 @@ public class RegulatoryCalculationController {
 
     /**
      * Get all metrics for a snapshot
-     */
+
     @GetMapping("/snapshot/{snapshotId}/metrics")
     public ResponseEntity<List<RegulatoryMetric>> getSnapshotMetrics(
             @PathVariable int snapshotId) {
@@ -98,6 +98,7 @@ public class RegulatoryCalculationController {
         List<RegulatoryMetric> metrics = metricRepository.findBySnapshotId(snapshotId);
         return ResponseEntity.ok(metrics);
     }
+     */
 
     /**
      * Get a specific metric across time
