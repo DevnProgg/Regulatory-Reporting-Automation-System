@@ -3,9 +3,18 @@ import random
 from faker import Faker
 from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv
+
+#load environment variables from .env file
+load_dotenv()
+
 # CONFIGURATION
 DB_CONFIG = {
+    "dbname": os.getenv("DBNAME"),
+    "username": os.getenv("USERNAME"),
+    "password": os.getenv("PASSWORD"),
     "host": "localhost",
+    "port": os.getenv("PORT", 5432)
 }
 
 
