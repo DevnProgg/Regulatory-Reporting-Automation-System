@@ -1,14 +1,15 @@
-server:
-  port: 3000
 
 spring:
   application:
     name: calculation_engine
 
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/BankingSystemDB
-    username: lauren
-    password: dev
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -24,10 +25,10 @@ spring:
       enabled : false
 
   rabbitmq:
-    host:  192.168.104.160
-    port: 5672
-    username: lauren
-    password: dev
+    host:  ${RABBITMQ_HOST_IP}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
     virtual-host: /
     listener:
       simple:
