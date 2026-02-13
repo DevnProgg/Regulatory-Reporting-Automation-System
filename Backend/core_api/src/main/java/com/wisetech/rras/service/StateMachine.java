@@ -1,6 +1,5 @@
 package com.wisetech.rras.service;
 
-import com.wisetech.rras.model.snapshot.Snapshot;
 import com.wisetech.rras.model.snapshot.States;
 import org.springframework.stereotype.Service;
 
